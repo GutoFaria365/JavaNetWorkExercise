@@ -1,64 +1,62 @@
 package udp;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
+import java.io.*;
+import java.net.*;
+import java.nio.file.*;
+import java.util.*;
 
 public class Server {
     public static void main(String[] args) throws IOException {
-        // write your code here
-        // OPEN AN UDP SOCKET
-        int portNumber = 8081;
-        String hostName = "localhost"; // 127.0.0.1
+        final int portNumber = 8081;
         DatagramSocket socket = new DatagramSocket(portNumber);
 
-        // CREATE A DATAGRAM PACKET AND RECEIVE DATA FROM THE THE SOCKET
-        byte[] recvBuffer = new byte[1024];
+        byte[] receiveBuffer = new byte[1024];
+
+        DatagramPacket receivedPacket = new DatagramPacket(receiveBuffer, receiveBuffer.length);
 
         while (socket.isBound()) {
-            DatagramPacket receivedPacket = new DatagramPacket(recvBuffer, recvBuffer.length);
-
-            // RECEIVE PACKET/MESSAGE FROM CLIENT
             System.out.println("Waiting for packet...");
             socket.receive(receivedPacket); // blocking method!
             String receivedString = new String(receivedPacket.getData(), 0, receivedPacket.getLength());
             System.out.println("Received: " + receivedString);
 
-            // SENDER ADDRESS, PORT AND MESSAGE
             InetAddress address = receivedPacket.getAddress();
             System.out.println("address = " + address);
             int port = receivedPacket.getPort();
             System.out.println("port = " + port);
-            String separator = "-";
-            System.out.println(separator.repeat(25));
+            System.out.println(".".repeat(25));
 
-            // SEND A PACKET/MESSAGE TO THE CLIENT
             String response;
+            if (receivedString.equals("HIT ME")) {
+                response = getRandomLine(new File("").getAbsolutePath() + "/resources/quotes.txt");
+            } else {
+                response = "UNSUPPORTED OPERATION";
+            }
+            byte[] responseBytes = response.getBytes();
+            DatagramPacket responsePacket = new DatagramPacket(responseBytes, responseBytes.length, address, port);
+            socket.send(responsePacket);
+            /*
             if (receivedString.equals("hit me")) {
                 RandomAccessFile source = new RandomAccessFile("resources/quotes.txt", "r");
                 source.length();
                 source.seek((long) (Math.random() * source.length()));
-                source.readLine();
-                if (source.readLine() == null) {
-                    response = "ups, please try again";
-                } else {
-                    response = source.readLine();
-                }
-
+                response = source.readLine();
             } else {
-                response = "unsupported operation".toUpperCase();
+                response = "unsupported operation".toUpperCase());
             }
-
-            byte[] responseBytes = response.getBytes();
-            DatagramPacket responsePacket = new DatagramPacket(responseBytes, responseBytes.length, address, port);
-            socket.send(responsePacket);
-
+             */
         }
-
-        // CLOSE THE SOCKET
         socket.close();
+    }
 
+    private static String getRandomLine(String path) {
+        List<String> lines;
+        try {
+            lines = Files.readAllLines(Paths.get(path));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+        return lines.get(new Random().nextInt(lines.size()));
     }
 }

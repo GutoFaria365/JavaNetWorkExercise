@@ -13,26 +13,16 @@ public class Client {
         String hostName = "localhost"; // 127.0.0.1
         DatagramSocket socket = new DatagramSocket();
 
-        // CREATE A DATAGRAM PACKET AND SEND IT FROM THE SOCKET
-        byte[] message = "Hello World this is another message".getBytes();
-
-        //reads a string from console
-        String input = "";
-        while (!input.equals("exit")) {
+        while (true) {
+            System.out.println("Enter a message to send to the server: [Press \"HIT ME\" to continue or \"exit\" to quit]");
             BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-            System.out.println("Enter a message to send to the server: ");
-
-            // RECEIVE USER INPUT TO SEND MESSAGE
-            input = br.readLine();
+            String input = br.readLine();
             if (input.equals("exit")) break;
-            message = input.getBytes();
+            byte[] message = input.getBytes();
 
-            // SEND A PACKET/MESSAGE TO THE SERVER
             DatagramPacket sendPacket = new DatagramPacket(message, message.length, InetAddress.getByName(hostName), portNumber);
             socket.send(sendPacket);
-            System.out.println("Message sent to the server: " + input);
 
-            // RECEIVE A PACKET/MESSAGE FROM THE SERVER
             byte[] receiveData = new byte[1024];
             DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 
@@ -40,5 +30,6 @@ public class Client {
             String receivedString = new String(receivePacket.getData(), 0, receivePacket.getLength());
             System.out.println(receivedString);
         }
+        socket.close();
     }
 }
