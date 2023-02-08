@@ -41,7 +41,11 @@ public class Server {
                 source.length();
                 source.seek((long) (Math.random() * source.length()));
                 source.readLine();
-                response = source.readLine();
+                if (source.readLine() == null) {
+                    response = "ups, please try again";
+                } else {
+                    response = source.readLine();
+                }
 
             } else {
                 response = "unsupported operation".toUpperCase();
